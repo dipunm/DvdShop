@@ -2,7 +2,6 @@ using NUnit.Framework;
 using DvdShop.Tests.Mocks;
 using System;
 using DvdShop.Domain.Models;
-using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
 
@@ -26,9 +25,11 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_ShouldReturnDataFromDatabase()
         {
-            var DummyData = MovieWithDvds("Movie 1", 3)
-                .Concat(MovieWithDvds("Movie 2", 3))
-                .Concat(MovieWithDvds("Movie 3", 3));
+            var DummyData = new []{
+                MovieWithDvds("Movie 1", 3),
+                MovieWithDvds("Movie 1", 3),
+                MovieWithDvds("Movie 1", 3)
+            };
             _db.Repopulate(DummyData);
 
             var movies = _shop.GetAvailableMovies();
@@ -39,8 +40,15 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_WhenAllDvdsForAMovieIsUnavailable_ShouldNotIncludeMovieInResult()
         {
-            _db.Dvds.ByMovie(2)
-                .Update(dvd => dvd.Available = false);
+            var DummyData = new []{
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb1"), 3),
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb2"), 3),
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb3"), 3)
+            };
+
+            _db.Repopulate(DummyData);
+            _db.Dvds.ByMovie("imdb1")
+                .Update(dvd => dvd.User = "Bob");
 
             var movies = _shop.GetAvailableMovies();
 
@@ -51,8 +59,15 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_WhenSomeDvdsForAMovieIsUnavailable_ShouldStillIncludeMovieInResult()
         {
-            _db.Dvds.ByMovie(2)
-                .Update(dvd => dvd.Available = false, limit: 1);
+            var DummyData = new []{
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb1"), 3),
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb2"), 3),
+                MovieWithDvds(new Movie("Movie 1", 0, "imdb3"), 3)
+            };
+
+            _db.Repopulate(DummyData);
+            _db.Dvds.ByMovie("imdb1")
+                .Update(dvd => dvd.User = "Bob", limit: 1);
 
             var movies = _shop.GetAvailableMovies();
 
@@ -62,7 +77,7 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_EachMovie_ShouldContainMovieTitle()
         {
-            var DummyData = MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3);
+            var DummyData = new [] { MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3) };
             _db.Repopulate(DummyData);
 
             var movies = _shop.GetAvailableMovies();
@@ -73,7 +88,7 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_EachMovie_ShouldContainMovieRRPrice()
         {
-            var DummyData = MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3);
+            var DummyData = new [] { MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3) };
             _db.Repopulate(DummyData);
 
             var movies = _shop.GetAvailableMovies();
@@ -84,7 +99,7 @@ namespace DvdShop.Tests
         [Test]
         public void GetAvailableMovies_EachMovie_ShouldContainImageUrlFromIMDB()
         {
-            var DummyData = MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3);
+            var DummyData = new [] { MovieWithDvds(new Movie("Movie 1", 5.99m, "U8HS8"), 3) };
             _db.Repopulate(DummyData);
 
             _imdb.SetImageUrl("U8HS8", new Uri("http://imdburl.com"));
@@ -94,14 +109,13 @@ namespace DvdShop.Tests
             movies.Single().ImageUrl.ShouldBe(new Uri("http://imdburl.com"));
         }
 
-        private IEnumerable<MockDvdData> MovieWithDvds(Movie movie, int nDvds)
+        private MockDvdData MovieWithDvds(Movie movie, int nDvds)
         {
-            return new []{
-                new MockDvdData(movie, System.Linq.Enumerable.Repeat(
-                    new Dvd(movie.Id), nDvds))};
+            return new MockDvdData(movie, System.Linq.Enumerable.Repeat(
+                    new Dvd(movie.ImdbId), nDvds));
         }
         
-        private IEnumerable<MockDvdData> MovieWithDvds(string movieTitle, int nDvds)
+        private MockDvdData MovieWithDvds(string movieTitle, int nDvds)
         {
             return MovieWithDvds(new Movie(movieTitle, 9.99m, "12345"), nDvds);
         }

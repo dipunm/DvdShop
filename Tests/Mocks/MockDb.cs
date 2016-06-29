@@ -19,7 +19,7 @@ namespace DvdShop.Tests.Mocks
             };
 
             Dvds = new DvdCollection(_movies.SelectMany(m => {
-                return Enumerable.Repeat(new Dvd(m.Id), 3);
+                return Enumerable.Repeat(new Dvd(m.ImdbId), 3);
             }));
         }
 
@@ -36,9 +36,9 @@ namespace DvdShop.Tests.Mocks
         public DvdCollection(IEnumerable<Dvd> dvds) : base(dvds)
         { }
 
-        public DvdCollection ByMovie(int movieId)
+        public DvdCollection ByMovie(string imdbId)
         {
-            return new DvdCollection(this.Where(d => d.MovieId == movieId));
+            return new DvdCollection(this.Where(d => d.ImdbId == imdbId));
         }
 
         public void Update(Action<Dvd> changes)

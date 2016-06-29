@@ -2,15 +2,14 @@ namespace DvdShop.Domain.Models
 {
     public class Dvd
     {
-        public Dvd(int movieId)
+        public Dvd(string imdbId)
         {
-            MovieId = movieId;
+            ImdbId = imdbId;
             User = null;
             Condition = 10;
         }
-        public int MovieId { get; }
+        public string ImdbId { get; }
         public string User { get; set; }
         public int Condition { get; set; }
-        public bool Available { get; set; }
     }
 }
