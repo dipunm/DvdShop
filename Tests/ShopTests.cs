@@ -13,6 +13,7 @@ namespace DvdShop.Tests
         private MockDb _db;
         private Shop _shop;
         private MockImdbService _imdb;
+        
         [SetUp]
         public void Setup()
         {
@@ -20,6 +21,12 @@ namespace DvdShop.Tests
             _db = new MockDb();
             _shop = new Shop(_db);
             _imdb = new MockImdbService();
+        }
+
+        [Test]
+        public void A_RandomTest_ShouldPass()
+        {
+            Assert.True(true);
         }
 
         [Test]
